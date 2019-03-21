@@ -62,6 +62,9 @@ public class Opiskelija implements Comparable<Opiskelija> {
     public void setOpintoviikot(int opintoviikot) {
         this.opintoviikot = opintoviikot;
     }
+    public void lisaaSuoritus(int opintoviikot) {
+        this.opintoviikot += opintoviikot;
+    }
 
     public int getOpiskelijaID() {
         return opiskelijaID;
