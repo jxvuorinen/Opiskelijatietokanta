@@ -34,9 +34,11 @@ public class Tietovarasto {
     
     private String sqlLisaaOpintoviikot = "UPDATE opiskelija SET opintoviikot = ? WHERE opiskelijaID = ?";
     
-    private String sqlOpiskelijanSuoritukset = "SELECT kurssi.nimi, laajuus, suorituspvm FROM Kurssi JOIN suoritus "
+    private String sqlOpiskelijanSuoritukset = "SELECT kurssi.kurssitunnus, kurssi.nimi, laajuus, suorituspvm FROM Kurssi JOIN suoritus "
             + "ON Kurssi.kurssitunnus = suoritus.kurssitunnus JOIN opiskelija ON opiskelija.opiskelijaID = suoritus.opiskelijaID"
             + " WHERE opiskelija.opiskelijaID = ?";
+    
+    private String sqlHaeKaikkiKurssit = "SELECT * FROM kurssi";
 
     public Opiskelija haeOpiskelija(int opiskelijaID) throws Exception {
         Connection yhteys = null;
@@ -276,7 +278,7 @@ public class Tietovarasto {
             haeSuoritukset.setInt(1, opiskelijaID);
             tulos = haeSuoritukset.executeQuery();
             while (tulos.next()) {
-                suoritukset.add(new Kysely(tulos.getString(1), tulos.getInt(2), tulos.getDate(3)));
+                suoritukset.add(new Kysely(tulos.getString(1), tulos.getString(2), tulos.getInt(3), tulos.getDate(4)));
             }
 
         } catch (SQLException sqle) {
@@ -287,5 +289,31 @@ public class Tietovarasto {
         return suoritukset;
         
     }
+    public ArrayList<Kurssi> haeKaikkiKurssit() throws Exception {
+        Connection yhteys = null;
+        ArrayList<Kurssi> listaus = new ArrayList<>();
+        try {
+            yhteys = YhteydenHallinta.avaaYhteys(ajuri, url, kayttajatunnus, salasana);
+        } catch (Exception e) {
+            throw new Exception("Tietovarasto ei ole auki.", e);
+        }
+
+        PreparedStatement haeKaikkiKurssit = null;
+        ResultSet tulos = null;
+        try {
+            haeKaikkiKurssit = yhteys.prepareStatement(sqlHaeKaikkiKurssit);
+            tulos = haeKaikkiKurssit.executeQuery();
+            while (tulos.next()) {
+                listaus.add(new Kurssi(tulos.getString(1), tulos.getString(2), tulos.getInt(3)));
+            }
+
+        } catch (SQLException sqle) {
+            throw new Exception("Hakuvirhe", sqle);
+        } finally {
+            YhteydenHallinta.suljeYhteys(yhteys);
+        }
+        return listaus;
+    }
+
 
 }
